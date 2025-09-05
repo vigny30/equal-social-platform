@@ -12,8 +12,8 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   distDir: 'out',
-  basePath: '/equal-social-platform',
-  assetPrefix: '/equal-social-platform',
+  basePath: process.env.NODE_ENV === 'production' ? '/equal-social-platform' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/equal-social-platform' : '',
 }
 
 export default nextConfig
