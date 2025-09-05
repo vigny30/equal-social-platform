@@ -1,6 +1,7 @@
 "use client"
 
 import { MobileSplashScreen, useMobileSplash } from "@/components/mobile-splash-screen"
+import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
 import { useEffect, useState } from "react"
 
 interface AppWrapperProps {
@@ -30,6 +31,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <>
+      {/* Service Worker Registration */}
+      <ServiceWorkerRegistration />
+      
       {/* Show splash screen only on mobile devices and first load */}
       {showSplash && isMobile && (
         <MobileSplashScreen
