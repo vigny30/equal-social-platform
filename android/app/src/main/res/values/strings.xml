@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Equal</string>
+    <string name="title_activity_main">Equal</string>
+    <string name="package_name">com.equal.app</string>
+    <string name="custom_url_scheme">com.equal.app</string>
+</resources>

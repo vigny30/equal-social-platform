@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportHeight="108"
+    android:viewportWidth="108">
+    
+    <!-- Background circles for depth -->
+    <path
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.08"
+        android:pathData="M54,24 A30,30 0 1,1 54,84 A30,30 0 1,1 54,24 Z" />
+    <path
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.12"
+        android:pathData="M54,29 A25,25 0 1,1 54,79 A25,25 0 1,1 54,29 Z" />
+    
+    <!-- Equal Logo Symbol -->
+    <group
+        android:translateX="54"
+        android:translateY="54"
+        android:scaleX="0.8"
+        android:scaleY="0.8">
+        <group
+            android:translateX="-16"
+            android:translateY="-6">
+            <!-- Logo Symbol -->
+            <path
+                android:fillColor="#ffffff"
+                android:fillAlpha="0.95"
+                android:fillType="evenOdd"
+                android:pathData="m7.839 20.783 16.03-28.054L20 -14 0 20.783h7.839Zm8.214 0H40L27.99 -0.106l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z" />
+        </group>
+    </group>
+    
+    <!-- Subtle highlight -->
+    <path
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.05"
+        android:pathData="M17,30 Q17,23 54,23 Q91,23 91,30 Q91,37 54,37 Q17,37 17,30 Z" />
+</vector>

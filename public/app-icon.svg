@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <!-- Background with Gradient -->
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0f3460;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#533483;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7209b7;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Logo Glow Effect -->
+    <filter id="logoGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+    
+    <!-- Subtle Inner Shadow -->
+    <filter id="innerShadow">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur stdDeviation="2" result="offset-blur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.2"/>
+      <feComposite in2="offset-blur" operator="in"/>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Rounded Rectangle Background -->
+  <rect width="512" height="512" rx="80" ry="80" fill="url(#iconGradient)" filter="url(#innerShadow)"/>
+  
+  <!-- Subtle Pattern Overlay -->
+  <pattern id="iconDotPattern" patternUnits="userSpaceOnUse" width="20" height="20">
+    <circle cx="10" cy="10" r="0.5" fill="rgba(255,255,255,0.03)"/>
+  </pattern>
+  <rect width="512" height="512" rx="80" ry="80" fill="url(#iconDotPattern)" opacity="0.5"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="100" cy="100" r="30" fill="rgba(255,255,255,0.02)" opacity="0.6"/>
+  <circle cx="400" cy="150" r="40" fill="rgba(255,255,255,0.02)" opacity="0.4"/>
+  <circle cx="80" cy="400" r="25" fill="rgba(255,255,255,0.02)" opacity="0.5"/>
+  <circle cx="420" cy="420" r="35" fill="rgba(255,255,255,0.02)" opacity="0.3"/>
+  
+  <!-- Main Logo Container -->
+  <g transform="translate(256, 256)">
+    <!-- Logo Background Circle -->
+    <circle cx="0" cy="0" r="120" fill="rgba(255,255,255,0.08)" opacity="0.8"/>
+    <circle cx="0" cy="0" r="100" fill="rgba(255,255,255,0.12)" opacity="0.6"/>
+    
+    <!-- Equal Logo (Scaled and Centered) -->
+    <g transform="translate(-64, -24) scale(3)" filter="url(#logoGlow)">
+      <!-- Logo Symbol -->
+      <path fill="#ffffff" fill-rule="evenodd" d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z" clip-rule="evenodd" opacity="0.95"/>
+      
+      <!-- Logo Text (Simplified for icon) -->
+      <g opacity="0.9">
+        <path fill="#ffffff" d="M57.588 9.6h6L73.828 38h-5.2l-2.36-6.88h-11.36L52.548 38h-5.2l10.24-28.4Zm7.16 17.16-4.16-12.16-4.16 12.16h8.32Z"/>
+        <path fill="#ffffff" d="M81.282 24.52c-.186-1.307-.706-2.32-1.56-3.04-.853-.72-1.866-1.08-3.04-1.08-1.68 0-2.986.613-3.92 1.84-.906 1.227-1.36 2.947-1.36 5.16s.454 3.933 1.36 5.16c.934 1.227 2.24 1.84 3.92 1.84 1.254 0 2.307-.373 3.16-1.12.854-.773 1.387-1.867 1.6-3.28l5.12.24c-.186 1.68-.733 3.147-1.64 4.4-.906 1.227-2.08 2.173-3.52 2.84-1.413.667-2.986 1-4.72 1-2.08 0-3.906-.453-5.48-1.36-1.546-.907-2.76-2.2-3.64-3.88-.853-1.68-1.28-3.627-1.28-5.84 0-2.24.427-4.187 1.28-5.84.88-1.68 2.094-2.973 3.64-3.88 1.574-.907 3.4-1.36 5.48-1.36 1.68 0 3.227.32 4.64.96 1.414.64 2.56 1.56 3.44 2.76.907 1.2 1.454 2.6 1.64 4.2l-5.12.28Z"/>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Subtle Highlight -->
+  <ellipse cx="256" cy="120" rx="150" ry="30" fill="rgba(255,255,255,0.05)" opacity="0.8"/>
+</svg>
