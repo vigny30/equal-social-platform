@@ -1,41 +1,22 @@
 "use client"
 
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Environment, Text3D, Center } from "@react-three/drei"
 import { Button } from "@/components/ui/button"
 import { PageTransition } from "@/components/page-transition"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { UserMenu } from "@/components/auth/user-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import { Suspense, useEffect } from "react"
+import { useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
-function Logo3D() {
+function Logo2D() {
   return (
-    <Center>
-      <Text3D
-        font="/fonts/helvetiker_regular.typeface.json"
-        size={8}
-        height={2}
-        curveSegments={12}
-        bevelEnabled
-        bevelThickness={0.3}
-        bevelSize={0.1}
-        bevelOffset={0}
-        bevelSegments={8}
-      >
-        E
-        <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} envMapIntensity={1.5} />
-      </Text3D>
-    </Center>
-  )
-}
-
-function LoadingFallback() {
-  return (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-6xl font-bold text-white/20 animate-pulse">E</div>
+    <div className="flex items-center justify-center">
+      <div className="text-[12rem] font-bold text-white/90 font-futuristic animate-glow hover-lift transition-all duration-700 select-none">
+        <span className="bg-gradient-to-br from-white via-purple-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl">
+          E
+        </span>
+      </div>
     </div>
   )
 }
@@ -83,19 +64,10 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* 3D Logo Section */}
+        {/* Logo Section */}
         <div className="h-screen flex flex-col items-center justify-center relative">
-          <div className="w-full h-2/3 relative animate-fade-in-scale">
-            <Canvas camera={{ position: [0, 0, 20], fov: 50 }} className="w-full h-full">
-              <Suspense fallback={null}>
-                <ambientLight intensity={0.3} />
-                <directionalLight position={[10, 10, 5]} intensity={1} />
-                <pointLight position={[-10, -10, -5]} intensity={0.5} />
-                <Logo3D />
-                <Environment preset="studio" />
-                <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
-              </Suspense>
-            </Canvas>
+          <div className="w-full h-2/3 relative animate-fade-in-scale flex items-center justify-center">
+            <Logo2D />
           </div>
 
           {/* App Title */}
