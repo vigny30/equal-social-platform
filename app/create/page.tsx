@@ -102,6 +102,10 @@ const photoFilters = [
   { id: "cool", name: "Cool", filter: "hue-rotate(180deg) saturate(1.3)" },
   { id: "dramatic", name: "Dramatic", filter: "contrast(1.5) brightness(0.9)" },
   { id: "soft", name: "Soft", filter: "blur(0.5px) brightness(1.1)" },
+  { id: "neon", name: "Neon", filter: "saturate(2) hue-rotate(270deg) contrast(1.3)" },
+  { id: "cyberpunk", name: "Cyberpunk", filter: "saturate(1.8) hue-rotate(300deg) contrast(1.4) brightness(1.1)" },
+  { id: "retro", name: "Retro", filter: "sepia(0.6) saturate(1.4) hue-rotate(15deg)" },
+  { id: "film", name: "Film", filter: "contrast(1.1) brightness(1.05) saturate(0.9)" },
   { id: "portrait-enhance", name: "Portrait AI", filter: "ai-filter" },
   { id: "landscape-enhance", name: "Landscape AI", filter: "ai-filter" },
   { id: "hdr-effect", name: "HDR Effect", filter: "ai-filter" },
@@ -116,9 +120,46 @@ const photoFilters = [
 const textAnimations = [
   { id: "none", name: "Static" },
   { id: "fadeIn", name: "Fade In" },
+  { id: "fadeInUp", name: "Fade In Up" },
+  { id: "fadeInDown", name: "Fade In Down" },
   { id: "slideUp", name: "Slide Up" },
+  { id: "slideDown", name: "Slide Down" },
+  { id: "slideLeft", name: "Slide Left" },
+  { id: "slideRight", name: "Slide Right" },
   { id: "bounce", name: "Bounce" },
+  { id: "bounceIn", name: "Bounce In" },
+  { id: "pulse", name: "Pulse" },
+  { id: "shake", name: "Shake" },
   { id: "typewriter", name: "Typewriter" },
+  { id: "glow", name: "Glow Effect" },
+  { id: "rainbow", name: "Rainbow Text" },
+]
+
+const textPresets = [
+  {
+    name: "Title",
+    style: { fontSize: 48, color: "#ffffff", animation: "fadeInUp", x: 50, y: 20 }
+  },
+  {
+    name: "Subtitle",
+    style: { fontSize: 32, color: "#cccccc", animation: "fadeIn", x: 50, y: 35 }
+  },
+  {
+    name: "Caption",
+    style: { fontSize: 24, color: "#ffffff", animation: "slideUp", x: 50, y: 80 }
+  },
+  {
+    name: "Highlight",
+    style: { fontSize: 36, color: "#ffff00", animation: "glow", x: 50, y: 50 }
+  },
+  {
+    name: "Fun Text",
+    style: { fontSize: 40, color: "#ff00ff", animation: "rainbow", x: 50, y: 60 }
+  },
+  {
+    name: "Alert",
+    style: { fontSize: 44, color: "#ff0000", animation: "shake", x: 50, y: 40 }
+  }
 ]
 
 const musicTracks = [
@@ -140,16 +181,38 @@ interface TextOverlay {
   duration: number
 }
 
-function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVideo: string) => void }) {
+function VideoEditor({ 
+  videoUrl, 
+  onSave, 
+  selectedMusic, 
+  setSelectedMusic, 
+  musicVolume, 
+  setMusicVolume, 
+  videoVolume, 
+  setVideoVolume 
+}: { 
+  videoUrl: string; 
+  onSave: (editedVideo: string) => void;
+  selectedMusic: string;
+  setSelectedMusic: (music: string) => void;
+  musicVolume: number[];
+  setMusicVolume: (volume: number[]) => void;
+  videoVolume: number[];
+  setVideoVolume: (volume: number[]) => void;
+}) {
   const [selectedFilter, setSelectedFilter] = useState("none")
   const [brightness, setBrightness] = useState([100])
   const [contrast, setContrast] = useState([100])
   const [saturation, setSaturation] = useState([100])
+  
+  // Visual effects states
+  const [glitchEffect, setGlitchEffect] = useState(false)
+  const [particlesEffect, setParticlesEffect] = useState(false)
+  const [vignetteEffect, setVignetteEffect] = useState(false)
   const [useAiVideoEnhancement, setUseAiVideoEnhancement] = useState(false)
+  const [useAiPhotoEnhancement, setUseAiPhotoEnhancement] = useState(false)
+  const [photoFilterIntensity, setPhotoFilterIntensity] = useState(70)
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([])
-  const [selectedMusic, setSelectedMusic] = useState("")
-  const [musicVolume, setMusicVolume] = useState([50])
-  const [videoVolume, setVideoVolume] = useState([100])
   const [playbackSpeed, setPlaybackSpeed] = useState([1])
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -172,9 +235,177 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
     }
   }, [])
 
-  const applyFilters = async () => {
-    const filter = videoFilters.find((f) => f.id === selectedFilter)
-    const customFilters = `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`
+  // Synchronous filter application for real-time preview
+  const getCurrentVideoFilter = () => {
+    const filter = videoFilters.find((f) => f.id === selectedVideoFilter)
+    let customFilters = `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`
+    
+    // Add visual effects
+    const effects = []
+    if (vignetteEffect) {
+      effects.push('drop-shadow(0 0 50px rgba(0,0,0,0.8))')
+    }
+    if (glitchEffect) {
+      effects.push('hue-rotate(90deg) saturate(150%)')
+    }
+    
+    if (effects.length > 0) {
+      customFilters += ' ' + effects.join(' ')
+    }
+    
+    // For AI filters, show custom filters as preview (AI processing happens on export)
+    if (filter && filter.filter === 'ai-filter') {
+      return customFilters
+    }
+    
+    return filter ? `${filter.filter} ${customFilters}` : customFilters
+  }
+
+  const getCurrentPhotoFilter = () => {
+    const filter = photoFilters.find((f) => f.id === selectedPhotoFilter)
+    let customFilters = `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`
+    
+    // Add visual effects
+    const effects = []
+    if (vignetteEffect) {
+      effects.push('drop-shadow(0 0 50px rgba(0,0,0,0.8))')
+    }
+    if (glitchEffect) {
+      effects.push('hue-rotate(90deg) saturate(150%)')
+    }
+    
+    if (effects.length > 0) {
+      customFilters += ' ' + effects.join(' ')
+    }
+    
+    // Apply filter intensity
+    const intensity = photoFilterIntensity / 100
+    
+    // For AI filters, show enhanced preview with intensity
+    if (filter && filter.filter === 'ai-filter') {
+      // Add preview effects based on filter type
+      const previewEffects = getAIFilterPreview(filter.id, intensity)
+      return `${customFilters} ${previewEffects}`
+    }
+    
+    // Apply intensity to regular CSS filters
+    if (filter && filter.filter !== 'none') {
+      const adjustedFilter = applyFilterIntensity(filter.filter, intensity)
+      return `${adjustedFilter} ${customFilters}`
+    }
+    
+    return customFilters
+  }
+
+  // Helper function to get AI filter preview effects
+  const getAIFilterPreview = (filterId: string, intensity: number) => {
+    const previewMap: Record<string, string> = {
+      'portrait-enhance': `contrast(${100 + intensity * 20}%) brightness(${100 + intensity * 10}%) saturate(${100 + intensity * 15}%)`,
+      'landscape-enhance': `saturate(${100 + intensity * 40}%) contrast(${100 + intensity * 15}%) brightness(${100 + intensity * 5}%)`,
+      'hdr-effect': `contrast(${100 + intensity * 60}%) brightness(${100 + intensity * 20}%) saturate(${100 + intensity * 25}%)`,
+      'warm-tone': `sepia(${intensity * 30}%) hue-rotate(${intensity * 15}deg) saturate(${100 + intensity * 20}%)`,
+      'cool-tone': `hue-rotate(${intensity * 180}deg) saturate(${100 + intensity * 30}%) brightness(${100 + intensity * 5}%)`,
+      'dramatic-ai': `contrast(${100 + intensity * 80}%) saturate(${100 - intensity * 20}%) brightness(${100 - intensity * 10}%)`,
+      'soft-focus': `blur(${intensity * 2}px) brightness(${100 + intensity * 10}%) contrast(${100 - intensity * 10}%)`,
+      'sharpen': `contrast(${100 + intensity * 40}%) brightness(${100 + intensity * 5}%) saturate(${100 + intensity * 10}%)`,
+      'noise-reduction': `blur(${intensity * 0.5}px) contrast(${100 + intensity * 10}%) brightness(${100 + intensity * 3}%)`
+    }
+    return previewMap[filterId] || ''
+  }
+
+  // Helper function to apply intensity to CSS filters
+  const applyFilterIntensity = (filter: string, intensity: number) => {
+    if (filter === 'none') return 'none'
+    
+    // Parse and adjust filter values based on intensity
+    return filter.replace(/(\w+)\(([^)]+)\)/g, (match, func, value) => {
+      if (func === 'sepia' || func === 'grayscale') {
+        const numValue = parseFloat(value)
+        return `${func}(${numValue * intensity})`
+      } else if (func === 'hue-rotate') {
+        const numValue = parseFloat(value)
+        return `${func}(${numValue * intensity}deg)`
+      } else if (func === 'contrast' || func === 'saturate') {
+        const numValue = parseFloat(value)
+        const adjusted = 1 + (numValue - 1) * intensity
+        return `${func}(${adjusted})`
+      }
+      return match
+    })
+  }
+
+  // Real-time filter preview effect
+  useEffect(() => {
+    const applyRealtimeFilter = async () => {
+      if (capturedPhoto && selectedPhotoFilter !== 'none') {
+        const filter = photoFilters.find((f) => f.id === selectedPhotoFilter)
+        if (filter && filter.filter === 'ai-filter') {
+          // Create a temporary image element for processing
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload = async () => {
+            try {
+              const filteredUrl = await applyPhotoAIFilter(img)
+              if (filteredUrl) {
+                // Update preview with filtered image
+                const previewElement = document.querySelector('.photo-preview img') as HTMLImageElement
+                if (previewElement) {
+                  previewElement.src = filteredUrl
+                }
+              }
+            } catch (error) {
+              console.error('Real-time filter error:', error)
+            }
+          }
+          img.src = capturedPhoto
+        }
+      }
+    }
+
+    // Debounce filter application to avoid excessive processing
+    const timeoutId = setTimeout(applyRealtimeFilter, 500)
+    return () => clearTimeout(timeoutId)
+  }, [selectedPhotoFilter, photoFilterIntensity, useAiPhotoEnhancement, capturedPhoto])
+
+  // Apply photo AI filters in real-time
+  const applyPhotoAIFilter = async (imageElement: HTMLImageElement) => {
+    const filter = photoFilters.find((f) => f.id === selectedPhotoFilter)
+    
+    if (filter && filter.filter === 'ai-filter') {
+      try {
+        // Map filter IDs to PhotoFilterOptions types
+        const filterTypeMap: Record<string, PhotoFilterOptions['type']> = {
+          'portrait-enhance': 'portrait_enhance',
+          'landscape-enhance': 'landscape_enhance',
+          'hdr-effect': 'hdr_effect',
+          'warm-tone': 'warm_tone',
+          'cool-tone': 'cool_tone',
+          'dramatic-ai': 'dramatic',
+          'soft-focus': 'soft_focus',
+          'sharpen': 'sharpen',
+          'noise-reduction': 'noise_reduction'
+        }
+        
+        const filterOptions: PhotoFilterOptions = {
+          type: filterTypeMap[filter.id] || 'portrait_enhance',
+          intensity: (photoFilterIntensity / 100) * (useAiPhotoEnhancement ? 1.2 : 0.8),
+          preserveColors: useAiPhotoEnhancement
+        }
+        
+        const result = await applyPhotoFilter(imageElement, filterOptions)
+        return result.filteredImageUrl
+      } catch (error) {
+        console.error('Photo AI filter error:', error)
+        return null
+      }
+    }
+    
+    return null
+  }
+
+  // Async AI filter processing for final export
+  const applyAIFilters = async () => {
+    const filter = videoFilters.find((f) => f.id === selectedVideoFilter)
     
     // Handle AI filters
     if (filter && filter.filter === 'ai-filter') {
@@ -184,13 +415,10 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
           const videoBlob = await fetch(recordedVideo).then(r => r.blob())
           const videoFile = new File([videoBlob], 'video.mp4', { type: 'video/mp4' })
           const filterOptions: VideoFilterOptions = {
-            filterType: filter.id as any,
-            intensity: 1.0,
-            brightness: brightness[0] / 100,
-            contrast: contrast[0] / 100,
-            saturation: saturation[0] / 100
+            type: filter.id as any,
+            intensity: 1.0
           }
-          const result = await applyVideoFilter(videoFile, filterOptions)
+          const result = await applyVideoFilter(videoRef.current!, filterOptions)
           return result.filteredVideoUrl
         }
         
@@ -198,65 +426,48 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
         if (capturedPhoto) {
           const photoBlob = await fetch(capturedPhoto).then(r => r.blob())
           const photoFile = new File([photoBlob], 'photo.jpg', { type: 'image/jpeg' })
-          const filterOptions: PhotoFilterOptions = {
-            filterType: filter.id as any,
-            intensity: 1.0,
-            brightness: brightness[0] / 100,
-            contrast: contrast[0] / 100,
-            saturation: saturation[0] / 100
+          
+          // Map filter IDs to PhotoFilterOptions types
+          const filterTypeMap: Record<string, PhotoFilterOptions['type']> = {
+            'portrait-enhance': 'portrait_enhance',
+            'landscape-enhance': 'landscape_enhance',
+            'hdr-effect': 'hdr_effect',
+            'warm-tone': 'warm_tone',
+            'cool-tone': 'cool_tone',
+            'dramatic-ai': 'dramatic',
+            'soft-focus': 'soft_focus',
+            'sharpen': 'sharpen',
+            'noise-reduction': 'noise_reduction'
           }
+          
+          const filterOptions: PhotoFilterOptions = {
+            type: filterTypeMap[filter.id] || 'portrait_enhance',
+            intensity: (photoFilterIntensity / 100) * (useAiPhotoEnhancement ? 1.2 : 0.8),
+            preserveColors: useAiPhotoEnhancement
+          }
+          
           const result = await applyPhotoFilter(photoFile, filterOptions)
           return result.filteredImageUrl
         }
       } catch (error) {
         console.error('AI filter error:', error)
-        // Fallback to regular CSS filters
-        return customFilters
       }
     }
     
-    return filter ? `${filter.filter} ${customFilters}` : customFilters
+    return null
   }
 
-  const applyPhotoFilters = async () => {
-    const filter = photoFilters.find((f) => f.id === selectedPhotoFilter)
-    const customFilters = `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`
-    
-    // Handle AI filters
-    if (filter && filter.filter === 'ai-filter') {
-      try {
-        if (capturedPhoto) {
-          const photoBlob = await fetch(capturedPhoto).then(r => r.blob())
-          const photoFile = new File([photoBlob], 'photo.jpg', { type: 'image/jpeg' })
-          const filterOptions: PhotoFilterOptions = {
-            filterType: filter.id as any,
-            intensity: 1.0,
-            brightness: brightness[0] / 100,
-            contrast: contrast[0] / 100,
-            saturation: saturation[0] / 100
-          }
-          const result = await applyPhotoFilter(photoFile, filterOptions)
-          return result.filteredImageUrl
-        }
-      } catch (error) {
-        console.error('Photo AI filter error:', error)
-        // Fallback to regular CSS filters
-        return customFilters
-      }
-    }
-    
-    return filter ? `${filter.filter} ${customFilters}` : customFilters
-  }
 
-  const addTextOverlay = () => {
+
+  const addTextOverlay = (preset?: typeof textPresets[0]) => {
     const newOverlay: TextOverlay = {
       id: Date.now().toString(),
-      text: "Add your text",
-      x: 50,
-      y: 50,
-      fontSize: 24,
-      color: "#ffffff",
-      animation: "none",
+      text: preset ? preset.name : "Add your text",
+      x: preset?.style.x || 50,
+      y: preset?.style.y || 50,
+      fontSize: preset?.style.fontSize || 24,
+      color: preset?.style.color || "#ffffff",
+      animation: preset?.style.animation || "none",
       startTime: currentTime,
       duration: 3,
     }
@@ -349,11 +560,37 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
             <video
               ref={videoRef}
               src={videoUrl}
-              className="w-full h-full object-cover"
-              style={{ filter: applyFilters() }}
+              className={`w-full h-full object-cover ${glitchEffect ? 'glitch-effect' : ''}`}
+              style={{ filter: getCurrentVideoFilter() }}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
             />
+
+            {/* Particles Effect Overlay */}
+            {particlesEffect && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="particles-container">
+                  {[...Array(20)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="particle"
+                      style={{
+                        position: 'absolute',
+                        width: '4px',
+                        height: '4px',
+                        backgroundColor: '#fff',
+                        borderRadius: '50%',
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animation: `float ${2 + Math.random() * 3}s ease-in-out infinite`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        opacity: 0.7
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Text Overlays */}
             {textOverlays.map(
@@ -362,13 +599,34 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
                 currentTime <= overlay.startTime + overlay.duration && (
                   <div
                     key={overlay.id}
-                    className="absolute pointer-events-none"
+                    className={`absolute pointer-events-none font-bold ${
+                      overlay.animation === 'glow' ? 'animate-pulse' :
+                      overlay.animation === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-pulse' :
+                      overlay.animation === 'pulse' ? 'animate-pulse' :
+                      overlay.animation === 'bounce' ? 'animate-bounce' :
+                      overlay.animation === 'typewriter' ? 'typewriter-text' :
+                      ''
+                    }`}
                     style={{
                       left: `${overlay.x}%`,
                       top: `${overlay.y}%`,
                       fontSize: `${overlay.fontSize}px`,
-                      color: overlay.color,
-                      animation: overlay.animation !== "none" ? `${overlay.animation} 0.5s ease-in-out` : undefined,
+                      color: overlay.animation === 'rainbow' ? undefined : overlay.color,
+                      textShadow: overlay.animation === 'glow' ? `0 0 10px ${overlay.color}, 0 0 20px ${overlay.color}, 0 0 30px ${overlay.color}` : 
+                                 overlay.animation === 'rainbow' ? '0 0 10px rgba(255,255,255,0.8)' : 
+                                 '2px 2px 4px rgba(0,0,0,0.8)',
+                      animation: 
+                        overlay.animation === 'fadeIn' ? 'fadeIn 0.5s ease-in-out' :
+                        overlay.animation === 'fadeInUp' ? 'fadeInUp 0.5s ease-in-out' :
+                        overlay.animation === 'fadeInDown' ? 'fadeInDown 0.5s ease-in-out' :
+                        overlay.animation === 'slideUp' ? 'slideInUp 0.5s ease-in-out' :
+                        overlay.animation === 'slideDown' ? 'slideInDown 0.5s ease-in-out' :
+                        overlay.animation === 'slideLeft' ? 'slideInLeft 0.5s ease-in-out' :
+                        overlay.animation === 'slideRight' ? 'slideInRight 0.5s ease-in-out' :
+                        overlay.animation === 'bounceIn' ? 'bounceIn 0.8s ease-in-out' :
+                        overlay.animation === 'shake' ? 'shake 0.5s ease-in-out' :
+                        overlay.animation === 'typewriter' ? `typewriter ${overlay.text.length * 0.1}s steps(${overlay.text.length}) forwards` :
+                        undefined,
                     }}
                   >
                     {overlay.text}
@@ -520,15 +778,27 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Button variant="outline" className="border-white/20 text-white bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className={`border-white/20 text-white ${glitchEffect ? 'bg-purple-600/50' : 'bg-transparent'}`}
+                  onClick={() => setGlitchEffect(!glitchEffect)}
+                >
                   <Zap className="w-4 h-4 mr-2" />
                   Glitch
                 </Button>
-                <Button variant="outline" className="border-white/20 text-white bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className={`border-white/20 text-white ${particlesEffect ? 'bg-purple-600/50' : 'bg-transparent'}`}
+                  onClick={() => setParticlesEffect(!particlesEffect)}
+                >
                   <Sparkles className="w-4 h-4 mr-2" />
                   Particles
                 </Button>
-                <Button variant="outline" className="border-white/20 text-white bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className={`border-white/20 text-white ${vignetteEffect ? 'bg-purple-600/50' : 'bg-transparent'}`}
+                  onClick={() => setVignetteEffect(!vignetteEffect)}
+                >
                   <Moon className="w-4 h-4 mr-2" />
                   Vignette
                 </Button>
@@ -543,26 +813,69 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white text-lg">Text Overlays</CardTitle>
-                <Button onClick={addTextOverlay} size="sm" className="bg-purple-600 hover:bg-purple-700">
+                <Button onClick={() => addTextOverlay()} size="sm" className="bg-purple-600 hover:bg-purple-700">
                   <Type className="w-4 h-4 mr-2" />
                   Add Text
                 </Button>
+              </div>
+              
+              {/* Text Presets */}
+              <div className="mt-4">
+                <Label className="text-white/70 text-sm mb-2 block">Quick Presets</Label>
+                <div className="flex flex-wrap gap-2">
+                  {textPresets.map((preset) => (
+                    <Button
+                      key={preset.name}
+                      onClick={() => addTextOverlay(preset)}
+                      size="sm"
+                      variant="outline"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10 text-xs"
+                    >
+                      {preset.name}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {textOverlays.map((overlay) => (
                 <div key={overlay.id} className="p-4 bg-white/5 rounded-lg border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
-                    <Input
-                      value={overlay.text}
-                      onChange={(e) => updateTextOverlay(overlay.id, { text: e.target.value })}
-                      className="bg-white/5 border-white/20 text-white"
-                    />
+                    <div className="flex-1 mr-2">
+                      <Input
+                        value={overlay.text}
+                        onChange={(e) => updateTextOverlay(overlay.id, { text: e.target.value })}
+                        className="bg-white/5 border-white/20 text-white"
+                        placeholder="Enter your text..."
+                      />
+                      {/* Live Preview */}
+                      <div className="mt-2 p-2 bg-black/30 rounded border border-white/10 min-h-[40px] flex items-center">
+                        <span 
+                          className={`font-bold ${
+                            overlay.animation === 'glow' ? 'animate-pulse' :
+                            overlay.animation === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-pulse' :
+                            overlay.animation === 'pulse' ? 'animate-pulse' :
+                            overlay.animation === 'bounce' ? 'animate-bounce' :
+                            overlay.animation === 'typewriter' ? 'typewriter-text' :
+                            ''
+                          }`}
+                          style={{
+                            fontSize: `${Math.min(overlay.fontSize * 0.6, 18)}px`,
+                            color: overlay.animation === 'rainbow' ? undefined : overlay.color,
+                            textShadow: overlay.animation === 'glow' ? `0 0 5px ${overlay.color}, 0 0 10px ${overlay.color}` : 
+                                       overlay.animation === 'rainbow' ? '0 0 5px rgba(255,255,255,0.8)' : 
+                                       '1px 1px 2px rgba(0,0,0,0.8)',
+                          }}
+                        >
+                          {overlay.text || 'Preview text...'}
+                        </span>
+                      </div>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeTextOverlay(overlay.id)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-400 hover:text-red-300 flex-shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -570,13 +883,14 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-white/70 text-sm">Font Size</Label>
+                      <Label className="text-white/70 text-sm">Font Size ({overlay.fontSize}px)</Label>
                       <Slider
                         value={[overlay.fontSize]}
                         onValueChange={([value]) => updateTextOverlay(overlay.id, { fontSize: value })}
                         max={72}
                         min={12}
                         step={1}
+                        className="mt-2"
                       />
                     </div>
                     <div>
@@ -585,7 +899,7 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
                         value={overlay.animation}
                         onValueChange={(value) => updateTextOverlay(overlay.id, { animation: value })}
                       >
-                        <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                        <SelectTrigger className="bg-white/5 border-white/20 text-white mt-2">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-black/90 border-white/20">
@@ -596,6 +910,78 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-white/70 text-sm">X Position ({overlay.x}%)</Label>
+                      <Slider
+                        value={[overlay.x]}
+                        onValueChange={([value]) => updateTextOverlay(overlay.id, { x: value })}
+                        max={90}
+                        min={0}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-white/70 text-sm">Y Position ({overlay.y}%)</Label>
+                      <Slider
+                        value={[overlay.y]}
+                        onValueChange={([value]) => updateTextOverlay(overlay.id, { y: value })}
+                        max={90}
+                        min={0}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-white/70 text-sm">Start Time ({overlay.startTime.toFixed(1)}s)</Label>
+                      <Slider
+                        value={[overlay.startTime]}
+                        onValueChange={([value]) => updateTextOverlay(overlay.id, { startTime: value })}
+                        max={duration || 30}
+                        min={0}
+                        step={0.1}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-white/70 text-sm">Duration ({overlay.duration}s)</Label>
+                      <Slider
+                        value={[overlay.duration]}
+                        onValueChange={([value]) => updateTextOverlay(overlay.id, { duration: value })}
+                        max={10}
+                        min={0.5}
+                        step={0.1}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-white/70 text-sm">Text Color</Label>
+                    <div className="flex gap-2 mt-2">
+                      {['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080'].map((color) => (
+                        <button
+                          key={color}
+                          className={`w-8 h-8 rounded-full border-2 transition-all ${
+                            overlay.color === color ? 'border-white scale-110' : 'border-white/30 hover:border-white/60'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => updateTextOverlay(overlay.id, { color })}
+                        />
+                      ))}
+                      <Input
+                        type="color"
+                        value={overlay.color}
+                        onChange={(e) => updateTextOverlay(overlay.id, { color: e.target.value })}
+                        className="w-8 h-8 p-0 border-0 rounded-full cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>
@@ -653,6 +1039,55 @@ function VideoEditor({ videoUrl, onSave }: { videoUrl: string; onSave: (editedVi
                       Video Volume: {videoVolume[0]}%
                     </Label>
                     <Slider value={videoVolume} onValueChange={setVideoVolume} max={100} min={0} step={1} />
+                  </div>
+
+                  {/* Music Player Controls */}
+                  <div className="space-y-3 pt-4 border-t border-white/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/90 text-sm font-medium">
+                        {musicTracks.find(t => t.id === selectedMusic)?.title || 'No track selected'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleMusicPlayback}
+                          disabled={!musicPlayer}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          {isMusicPlaying ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={stopMusic}
+                          disabled={!musicPlayer}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          <Square className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Music Progress Bar */}
+                    {musicPlayer && (
+                      <div className="space-y-2">
+                        <div className="w-full bg-white/10 rounded-full h-2">
+                          <div 
+                            className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${musicDuration > 0 ? (musicCurrentTime / musicDuration) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-white/60">
+                          <span>{Math.floor(musicCurrentTime / 60)}:{Math.floor(musicCurrentTime % 60).toString().padStart(2, '0')}</span>
+                          <span>{Math.floor(musicDuration / 60)}:{Math.floor(musicDuration % 60).toString().padStart(2, '0')}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -758,6 +1193,18 @@ export default function CreatePage() {
 
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [publishType, setPublishType] = useState<'post' | 'story'>('post')
+  
+  // Music and audio states
+  const [selectedMusic, setSelectedMusic] = useState("")
+  const [musicVolume, setMusicVolume] = useState([50])
+  const [videoVolume, setVideoVolume] = useState([100])
+  const [showPublishOptions, setShowPublishOptions] = useState(false)
+  const [storyDuration, setStoryDuration] = useState(24) // hours
+  const [isPrivateStory, setIsPrivateStory] = useState(false)
+  const [selectedAudience, setSelectedAudience] = useState<'public' | 'friends' | 'close_friends'>('public')
   
   // Narrator states
   const [availableVoices, setAvailableVoices] = useState<NarratorVoice[]>([])
@@ -775,6 +1222,12 @@ export default function CreatePage() {
   const [photoNarratorText, setPhotoNarratorText] = useState("")
   const [videoNarratorEnabled, setVideoNarratorEnabled] = useState(false)
   const [photoNarratorEnabled, setPhotoNarratorEnabled] = useState(false)
+  
+  // Music player states
+  const [musicPlayer, setMusicPlayer] = useState<HTMLAudioElement | null>(null)
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false)
+  const [musicCurrentTime, setMusicCurrentTime] = useState(0)
+  const [musicDuration, setMusicDuration] = useState(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -792,6 +1245,13 @@ export default function CreatePage() {
       }
       if (timerRef.current) {
         clearInterval(timerRef.current)
+      }
+      // Cleanup music player
+      if (musicPlayer) {
+        musicPlayer.pause()
+        musicPlayer.removeEventListener('timeupdate', updateMusicTime)
+        musicPlayer.removeEventListener('loadedmetadata', updateMusicDuration)
+        musicPlayer.removeEventListener('ended', handleMusicEnded)
       }
     }
   }, [])
@@ -1080,6 +1540,86 @@ export default function CreatePage() {
     setShowPrecut(!showPrecut)
   }
 
+  // Music player functions
+  const loadMusicTrack = (trackId: string) => {
+    const track = musicTracks.find(t => t.id === trackId)
+    if (!track) return
+
+    // Stop current music if playing
+    if (musicPlayer) {
+      musicPlayer.pause()
+      musicPlayer.removeEventListener('timeupdate', updateMusicTime)
+      musicPlayer.removeEventListener('loadedmetadata', updateMusicDuration)
+      musicPlayer.removeEventListener('ended', handleMusicEnded)
+    }
+
+    // Create new audio element with placeholder URL (in real app, use actual track URLs)
+    const audio = new Audio(`/music/${track.id}.mp3`) // Placeholder URL
+    audio.volume = musicVolume[0] / 100
+    
+    audio.addEventListener('timeupdate', updateMusicTime)
+    audio.addEventListener('loadedmetadata', updateMusicDuration)
+    audio.addEventListener('ended', handleMusicEnded)
+    
+    setMusicPlayer(audio)
+    setIsMusicPlaying(false)
+  }
+
+  const updateMusicTime = () => {
+    if (musicPlayer) {
+      setMusicCurrentTime(musicPlayer.currentTime)
+    }
+  }
+
+  const updateMusicDuration = () => {
+    if (musicPlayer) {
+      setMusicDuration(musicPlayer.duration)
+    }
+  }
+
+  const handleMusicEnded = () => {
+    setIsMusicPlaying(false)
+    setMusicCurrentTime(0)
+  }
+
+  const toggleMusicPlayback = () => {
+    if (!musicPlayer) return
+
+    if (isMusicPlaying) {
+      musicPlayer.pause()
+      setIsMusicPlaying(false)
+    } else {
+      musicPlayer.play().catch(error => {
+        console.error('Music playback failed:', error)
+        alert('Failed to play music. Please try again.')
+      })
+      setIsMusicPlaying(true)
+    }
+  }
+
+  const stopMusic = () => {
+    if (musicPlayer) {
+      musicPlayer.pause()
+      musicPlayer.currentTime = 0
+      setIsMusicPlaying(false)
+      setMusicCurrentTime(0)
+    }
+  }
+
+  // Update music volume when slider changes
+  useEffect(() => {
+    if (musicPlayer) {
+      musicPlayer.volume = musicVolume[0] / 100
+    }
+  }, [musicVolume, musicPlayer])
+
+  // Load music track when selection changes
+  useEffect(() => {
+    if (selectedMusic) {
+      loadMusicTrack(selectedMusic)
+    }
+  }, [selectedMusic])
+
   const getFilteredVoices = () => {
     if (narratorGender === 'neutral') {
       return availableVoices
@@ -1104,6 +1644,7 @@ export default function CreatePage() {
     }
 
     setIsPublishing(true)
+    setPublishError(null) // Clear any previous errors
 
     try {
       let mediaUrl = null
@@ -1182,7 +1723,8 @@ export default function CreatePage() {
                    fileToUpload.type.startsWith('video/') ? 'video' : 'other'
       }
 
-      const postData = {
+      // Prepare data based on publish type
+      const baseData = {
         user_id: user.id,
         content: script.trim(),
         tone: selectedTone,
@@ -1194,15 +1736,40 @@ export default function CreatePage() {
         photo_narrator_enabled: photoNarratorEnabled,
       }
 
-      const { data, error } = await supabase.from("posts").insert([postData]).select().single()
+      let data, error
+
+      if (publishType === 'story') {
+        // Calculate expiration time based on story duration
+        const expiresAt = new Date()
+        expiresAt.setHours(expiresAt.getHours() + storyDuration)
+
+        const storyData = {
+          ...baseData,
+          audience: selectedAudience,
+          is_private: isPrivateStory,
+          expires_at: expiresAt.toISOString(),
+          duration_hours: storyDuration,
+        }
+
+        // Insert into stories table
+        const result = await supabase.from("stories").insert([storyData]).select().single()
+        data = result.data
+        error = result.error
+      } else {
+        // Insert into posts table
+        const result = await supabase.from("posts").insert([baseData]).select().single()
+        data = result.data
+        error = result.error
+      }
 
       if (error) {
         console.error('Database insertion error:', error)
-        throw new Error(`Failed to create post: ${error.message}`)
+        throw new Error(`Failed to create ${publishType}: ${error.message}`)
       }
 
-      console.log("Post published successfully:", data)
+      console.log(`${publishType} published successfully:`, data)
       setPublishSuccess(true)
+      setRetryCount(0) // Reset retry count on success
 
       // Reset form after successful publish
       setTimeout(() => {
@@ -1212,16 +1779,42 @@ export default function CreatePage() {
         setUploadedFiles([])
         setEnhancementResults(null)
         setPublishSuccess(false)
+        setPublishError(null)
+        setRetryCount(0)
         setVideoNarratorText("")
         setPhotoNarratorText("")
         setVideoNarratorEnabled(false)
         setPhotoNarratorEnabled(false)
+        // Reset publish type states
+        setPublishType('post')
+        setStoryDuration(24)
+        setIsPrivateStory(false)
+        setSelectedAudience('public')
       }, 2000)
     } catch (error) {
       console.error("Error publishing post:", error)
-      // Show specific error message to user
-      const errorMessage = error instanceof Error ? error.message : "Failed to publish post. Please try again."
-      alert(errorMessage)
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = "Failed to publish post. Please try again."
+      
+      if (error instanceof Error) {
+        if (error.message.includes('JWT') || error.message.includes('auth')) {
+          errorMessage = "Authentication error. Please sign in again."
+        } else if (error.message.includes('storage')) {
+          errorMessage = "Failed to upload media. Please check your file and try again."
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again."
+        } else if (error.message.includes('size') || error.message.includes('large')) {
+          errorMessage = "File too large. Please use a smaller file."
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      // Show error in a more user-friendly way
+        setPublishSuccess(false)
+        setPublishError(errorMessage)
+        setRetryCount(prev => prev + 1)
     } finally {
       setIsPublishing(false)
     }
@@ -1250,7 +1843,16 @@ export default function CreatePage() {
               <p className="text-xl text-white/70">Perfect your creation</p>
             </div>
 
-            <VideoEditor videoUrl={recordedVideo} onSave={handleSaveEditedVideo} />
+            <VideoEditor 
+                videoUrl={recordedVideo} 
+                onSave={handleSaveEditedVideo}
+                selectedMusic={selectedMusic}
+                setSelectedMusic={setSelectedMusic}
+                musicVolume={musicVolume}
+                setMusicVolume={setMusicVolume}
+                videoVolume={videoVolume}
+                setVideoVolume={setVideoVolume}
+              />
 
             <div className="flex justify-center mt-6">
               <Button
@@ -1541,8 +2143,8 @@ export default function CreatePage() {
                             <p className="text-xs text-white/60">Apply AI-powered stabilization and quality improvements</p>
                           </div>
                           <Switch
-                            checked={useAiVideoEnhancement}
-                            onCheckedChange={setUseAiVideoEnhancement}
+                            checked={useAiPhotoEnhancement}
+                            onCheckedChange={setUseAiPhotoEnhancement}
                           />
                         </div>
                       </div>
@@ -1666,9 +2268,9 @@ export default function CreatePage() {
                           <img 
                             src={capturedPhoto} 
                             alt="Captured photo" 
-                            className="w-full h-full object-cover"
+                            className={`w-full h-full object-cover ${glitchEffect ? 'glitch-effect' : ''}`}
                             style={{
-                              filter: `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`
+                              filter: getCurrentPhotoFilter()
                             }}
                           />
                         </div>
@@ -1713,22 +2315,87 @@ export default function CreatePage() {
                         </div>
 
                         {/* Photo Filter Selection */}
-                        <div className="space-y-2">
-                          <Label className="text-sm text-white/70">Photo Filter</Label>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {photoFilters.map((filter) => (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm text-white/70">Photo Filter</Label>
+                            {selectedPhotoFilter !== "none" && (
                               <Button
-                                key={filter.id}
-                                variant={selectedPhotoFilter === filter.id ? "default" : "outline"}
+                                variant="ghost"
                                 size="sm"
-                                onClick={() => setSelectedPhotoFilter(filter.id)}
-                                className="text-xs"
+                                onClick={() => {
+                                  setSelectedPhotoFilter("none")
+                                  setPhotoFilterIntensity(70)
+                                }}
+                                className="text-xs text-white/50 hover:text-white/80"
                               >
-                                {filter.name}
+                                Reset
                               </Button>
-                            ))}
+                            )}
+                          </div>
+                          
+                          {/* Basic Filters */}
+                          <div className="space-y-2">
+                            <Label className="text-xs text-white/50">Basic Filters</Label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {photoFilters.slice(0, 12).map((filter) => (
+                                <Button
+                                  key={filter.id}
+                                  variant={selectedPhotoFilter === filter.id ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setSelectedPhotoFilter(filter.id)}
+                                  className={`text-xs transition-all ${
+                                    selectedPhotoFilter === filter.id 
+                                      ? 'bg-white text-black shadow-lg' 
+                                      : 'hover:bg-white/10'
+                                  }`}
+                                >
+                                  {filter.name}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* AI Filters */}
+                          <div className="space-y-2">
+                            <Label className="text-xs text-white/50">AI-Powered Filters</Label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {photoFilters.slice(12).map((filter) => (
+                                <Button
+                                  key={filter.id}
+                                  variant={selectedPhotoFilter === filter.id ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setSelectedPhotoFilter(filter.id)}
+                                  className={`text-xs transition-all ${
+                                    selectedPhotoFilter === filter.id 
+                                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' 
+                                      : 'hover:bg-white/10 border-purple-500/30'
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-1">
+                                    {filter.name}
+                                    <span className="text-[10px] opacity-70">AI</span>
+                                  </span>
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         </div>
+
+                        {/* Photo Filter Intensity */}
+                        {selectedPhotoFilter !== "none" && (
+                          <div className="space-y-2">
+                            <Label className="text-sm text-white/70">Filter Intensity</Label>
+                            <Slider
+                              value={[photoFilterIntensity]}
+                              onValueChange={(value) => setPhotoFilterIntensity(value[0])}
+                              max={100}
+                              min={0}
+                              step={5}
+                              className="w-full"
+                            />
+                            <div className="text-xs text-white/50 text-center">{photoFilterIntensity}%</div>
+                          </div>
+                        )}
 
                         {/* AI Enhancement Toggle */}
                         <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
@@ -2093,13 +2760,118 @@ export default function CreatePage() {
                 </div>
               )}
 
-              {/* Publish Button */}
-              <div className="pt-6">
+              {/* Enhanced Publish Section */}
+              <div className="pt-6 space-y-4">
                 {publishSuccess && (
                   <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-300 text-center">
-                    Content published successfully! 🎉
+                    {publishType === 'story' ? 'Story published successfully! 🎉' : 'Content published successfully! 🎉'}
                   </div>
                 )}
+                
+                {publishError && (
+                   <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300">
+                     <div className="flex items-center justify-between mb-2">
+                       <span>{publishError}</span>
+                       <button 
+                          onClick={() => {
+                            setPublishError(null)
+                            setRetryCount(0)
+                          }}
+                          className="ml-2 text-red-400 hover:text-red-300"
+                        >
+                          ✕
+                        </button>
+                     </div>
+                     {retryCount < 3 && (
+                       <div className="flex gap-2 mt-2">
+                         <Button
+                           onClick={handleGeneratePost}
+                           disabled={isPublishing}
+                           size="sm"
+                           className="bg-red-600 hover:bg-red-700 text-white"
+                         >
+                           Retry ({3 - retryCount} attempts left)
+                         </Button>
+                       </div>
+                     )}
+                   </div>
+                 )}
+
+                {/* Publish Type Selection */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={publishType === 'post' ? 'default' : 'outline'}
+                    onClick={() => setPublishType('post')}
+                    className={publishType === 'post' 
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                      : 'border-white/20 text-white bg-transparent hover:bg-white/5'
+                    }
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Post
+                  </Button>
+                  <Button
+                    variant={publishType === 'story' ? 'default' : 'outline'}
+                    onClick={() => setPublishType('story')}
+                    className={publishType === 'story' 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                      : 'border-white/20 text-white bg-transparent hover:bg-white/5'
+                    }
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Story
+                  </Button>
+                </div>
+
+                {/* Story Options */}
+                {publishType === 'story' && (
+                  <Card className="bg-black/20 backdrop-blur-md border border-white/10">
+                    <CardContent className="p-4 space-y-4">
+                      <div className="space-y-3">
+                        <Label className="text-sm text-white/70">Story Settings</Label>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-sm text-white/70">Audience</Label>
+                          <Select value={selectedAudience} onValueChange={(value: 'public' | 'friends' | 'close_friends') => setSelectedAudience(value)}>
+                            <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-black/90 border-white/20">
+                              <SelectItem value="public" className="text-white">Public</SelectItem>
+                              <SelectItem value="friends" className="text-white">Friends</SelectItem>
+                              <SelectItem value="close_friends" className="text-white">Close Friends</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm text-white/70">Duration: {storyDuration} hours</Label>
+                          <Slider
+                            value={[storyDuration]}
+                            onValueChange={([value]) => setStoryDuration(value)}
+                            min={1}
+                            max={48}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="private-story"
+                            checked={isPrivateStory}
+                            onCheckedChange={setIsPrivateStory}
+                          />
+                          <Label htmlFor="private-story" className="text-sm text-white/70">
+                            Private Story (Only you can see)
+                          </Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Main Publish Button */}
                 <Button
                   onClick={handleGeneratePost}
                   disabled={
@@ -2109,17 +2881,28 @@ export default function CreatePage() {
                     isEnhancing ||
                     !user
                   }
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-4 text-base md:text-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 h-12 md:h-auto"
+                  className={`w-full font-semibold py-4 text-base md:text-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 h-12 md:h-auto ${
+                    publishType === 'story' 
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700' 
+                      : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                  } text-white`}
                 >
                   {isPublishing || isEnhancing ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      {isEnhancing ? "Enhancing with AI..." : "Publishing..."}
+                      {isEnhancing ? "Enhancing with AI..." : `Publishing ${publishType}...`}
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5 mr-2" />
-                      {recordedVideo ? "Edit Video" : aiNarration ? "Publish with AI Enhancement" : "Publish Content"}
+                      {publishType === 'story' 
+                        ? `Publish as ${storyDuration}h Story` 
+                        : recordedVideo 
+                          ? "Edit & Publish Video" 
+                          : aiNarration 
+                            ? "Publish with AI Enhancement" 
+                            : "Publish Content"
+                      }
                     </>
                   )}
                 </Button>

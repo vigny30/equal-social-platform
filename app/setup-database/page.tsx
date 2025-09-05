@@ -67,7 +67,7 @@ export default function SetupDatabasePage() {
     setIsChecking(true)
     setStatus('Checking database tables and storage buckets...')
     
-    const tablesToCheck = ['profiles', 'posts', 'likes', 'comments', 'user_tracking', 'live_streams']
+    const tablesToCheck = ['profiles', 'posts', 'stories', 'likes', 'comments', 'user_tracking', 'live_streams']
     const results: TableStatus[] = []
     
     for (const table of tablesToCheck) {
@@ -143,6 +143,32 @@ export default function SetupDatabasePage() {
     }
   }
 
+  const createStoriesTable = async () => {
+    if (!user) {
+      setStatus('❌ Please log in first')
+      return
+    }
+
+    try {
+      setStatus('Creating stories table...')
+      
+      // Try to create the table using a stored procedure or direct SQL
+      const { error } = await supabase.rpc('create_stories_table')
+      
+      if (error) {
+        // If RPC doesn't exist, show manual instructions
+        setStatus('❌ Cannot create table automatically. Please use manual setup.')
+        return
+      }
+      
+      setStatus('✅ stories table created successfully!')
+      // Recheck tables
+      await checkAllTables()
+    } catch (err: any) {
+      setStatus(`❌ Error: ${err.message}`)
+    }
+  }
+
   const createAvatarsBucket = async () => {
     if (!user) {
       setStatus('❌ Please log in first')
@@ -205,6 +231,7 @@ export default function SetupDatabasePage() {
   const missingTables = tables.filter(t => !t.exists)
   const missingBuckets = buckets.filter(b => !b.exists)
   const trackingTableMissing = tables.find(t => t.name === 'user_tracking' && !t.exists)
+  const storiesTableMissing = tables.find(t => t.name === 'stories' && !t.exists)
   const liveStreamsTableMissing = tables.find(t => t.name === 'live_streams' && !t.exists)
   const avatarsBucketMissing = buckets.find(b => b.name === 'avatars' && !b.exists)
 
@@ -344,6 +371,82 @@ LEFT JOIN profiles p_follower ON ut.follower_id = p_follower.id
 LEFT JOIN profiles p_following ON ut.following_id = p_following.id;
 
 GRANT SELECT ON user_tracking_details TO authenticated;`}
+                      </pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {storiesTableMissing && (
+              <Card className="bg-yellow-900/20 border-yellow-700">
+                <CardHeader>
+                  <CardTitle>Stories Table Missing</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p>The stories table is required for the story publishing functionality to work.</p>
+                  
+                  <div className="space-y-4">
+                    <Button onClick={createStoriesTable} className="w-full">
+                      Try Auto-Create Stories Table
+                    </Button>
+                    
+                    <div className="border-t border-gray-700 pt-4">
+                      <h3 className="font-semibold mb-2">Manual Setup Instructions:</h3>
+                      <p className="text-sm text-gray-400 mb-3">
+                        If auto-creation fails, please run this SQL in your Supabase dashboard:
+                      </p>
+                      <pre className="bg-gray-800 p-4 rounded text-xs overflow-x-auto">
+{`-- Create stories table for temporary story content
+CREATE TABLE IF NOT EXISTS public.stories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  content TEXT NOT NULL,
+  tone TEXT,
+  ai_narration BOOLEAN DEFAULT false,
+  media_url TEXT,
+  media_type TEXT,
+  narrator_audio_url TEXT,
+  video_narrator_enabled BOOLEAN DEFAULT false,
+  photo_narrator_enabled BOOLEAN DEFAULT false,
+  audience TEXT DEFAULT 'public' CHECK (audience IN ('public', 'followers', 'close_friends')),
+  privacy TEXT DEFAULT 'public' CHECK (privacy IN ('public', 'private')),
+  duration INTEGER DEFAULT 24 CHECK (duration > 0 AND duration <= 168),
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.stories ENABLE ROW LEVEL SECURITY;
+
+-- Create policies and indexes
+CREATE POLICY "Users can view public stories" ON public.stories
+  FOR SELECT USING (
+    privacy = 'public' AND expires_at > NOW() AND
+    (audience = 'public' OR 
+     (audience = 'followers' AND EXISTS (
+       SELECT 1 FROM user_tracking 
+       WHERE following_id = stories.user_id AND follower_id = auth.uid()
+     ))
+    )
+  );
+
+CREATE POLICY "Users can view own stories" ON public.stories
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own stories" ON public.stories
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own stories" ON public.stories
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own stories" ON public.stories
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS stories_user_id_idx ON public.stories(user_id);
+CREATE INDEX IF NOT EXISTS stories_expires_at_idx ON public.stories(expires_at);`}
                       </pre>
                     </div>
                   </div>
