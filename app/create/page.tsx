@@ -2143,8 +2143,8 @@ export default function CreatePage() {
                             <p className="text-xs text-white/60">Apply AI-powered stabilization and quality improvements</p>
                           </div>
                           <Switch
-                            checked={useAiPhotoEnhancement}
-                            onCheckedChange={setUseAiPhotoEnhancement}
+                            checked={useAiVideoEnhancement}
+                            onCheckedChange={setUseAiVideoEnhancement}
                           />
                         </div>
                       </div>
@@ -2404,8 +2404,8 @@ export default function CreatePage() {
                             <p className="text-xs text-white/60">Apply AI-powered noise reduction and sharpening</p>
                           </div>
                           <Switch
-                            checked={useAiVideoEnhancement}
-                            onCheckedChange={setUseAiVideoEnhancement}
+                            checked={useAiPhotoEnhancement}
+                            onCheckedChange={setUseAiPhotoEnhancement}
                           />
                         </div>
                       </div>
