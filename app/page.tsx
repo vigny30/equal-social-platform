@@ -11,22 +11,48 @@ import { supabase } from "@/lib/supabase"
 
 function Logo3D() {
   return (
-    <div className="flex items-center justify-center">
-      <div className="text-[12rem] font-bold text-black font-futuristic animate-glow hover-lift transition-all duration-700 select-none" style={{
-        textShadow: `
-          0 0 20px rgba(139, 92, 246, 0.8),
-          0 0 40px rgba(139, 92, 246, 0.6),
-          0 0 60px rgba(139, 92, 246, 0.4),
-          0 0 80px rgba(139, 92, 246, 0.2),
-          0 0 100px rgba(139, 92, 246, 0.1),
-          0 10px 20px rgba(0, 0, 0, 0.5),
-          0 20px 40px rgba(0, 0, 0, 0.3),
-          0 30px 60px rgba(0, 0, 0, 0.2)
-        `
-      }}>
-        E
-      </div>
-    </div>
+    <div className="flex items-center justify-center relative">
+       {/* Atmospheric backdrop */}
+       <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 via-blue-500/10 to-transparent rounded-full blur-3xl scale-150 animate-pulse"></div>
+       
+       {/* Floating particles */}
+       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-400/60 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
+         <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-blue-400/60 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+         <div className="absolute top-1/2 left-3/4 w-1.5 h-1.5 bg-emerald-400/60 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+         <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-red-400/60 rounded-full animate-ping" style={{animationDelay: '3s'}}></div>
+       </div>
+       
+       {/* Main 3D Logo */}
+       <div 
+         className="text-[12rem] font-black animate-rotate-sideways hover-lift select-none metallic-3d relative z-10" 
+         data-text="E"
+         style={{
+           fontFamily: 'Arial Black, sans-serif',
+           letterSpacing: '-0.05em'
+         }}
+       >
+         E
+       </div>
+       
+       {/* Reflection effect */}
+       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full opacity-20 scale-y-[-1] blur-sm">
+         <div 
+           className="text-[12rem] font-black select-none metallic-3d" 
+           data-text="E"
+           style={{
+             fontFamily: 'Arial Black, sans-serif',
+             letterSpacing: '-0.05em',
+             background: 'linear-gradient(to bottom, rgba(42, 42, 42, 0.3) 0%, transparent 70%)',
+             WebkitBackgroundClip: 'text',
+             backgroundClip: 'text',
+             WebkitTextFillColor: 'transparent'
+           }}
+         >
+           E
+         </div>
+       </div>
+     </div>
   )
 }
 
@@ -81,7 +107,7 @@ export default function HomePage() {
 
           {/* App Title */}
           <div className="mt-8 animate-fade-in-up stagger-1">
-            <h1 className="text-4xl font-bold text-white/80 tracking-wider font-futuristic animate-glow">EQUAL</h1>
+            <h1 className="text-4xl font-bold text-white/80 tracking-wider font-futuristic animate-glow equal-text-3d">EQUAL</h1>
           </div>
 
           {/* Navigation Buttons */}
