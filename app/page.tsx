@@ -9,13 +9,22 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
-function Logo2D() {
+function Logo3D() {
   return (
     <div className="flex items-center justify-center">
-      <div className="text-[12rem] font-bold text-white/90 font-futuristic animate-glow hover-lift transition-all duration-700 select-none">
-        <span className="bg-gradient-to-br from-white via-purple-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl">
-          E
-        </span>
+      <div className="text-[12rem] font-bold text-black font-futuristic animate-glow hover-lift transition-all duration-700 select-none" style={{
+        textShadow: `
+          0 0 20px rgba(139, 92, 246, 0.8),
+          0 0 40px rgba(139, 92, 246, 0.6),
+          0 0 60px rgba(139, 92, 246, 0.4),
+          0 0 80px rgba(139, 92, 246, 0.2),
+          0 0 100px rgba(139, 92, 246, 0.1),
+          0 10px 20px rgba(0, 0, 0, 0.5),
+          0 20px 40px rgba(0, 0, 0, 0.3),
+          0 30px 60px rgba(0, 0, 0, 0.2)
+        `
+      }}>
+        E
       </div>
     </div>
   )
@@ -67,7 +76,7 @@ export default function HomePage() {
         {/* Logo Section */}
         <div className="h-screen flex flex-col items-center justify-center relative">
           <div className="w-full h-2/3 relative animate-fade-in-scale flex items-center justify-center">
-            <Logo2D />
+            <Logo3D />
           </div>
 
           {/* App Title */}

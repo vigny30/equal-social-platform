@@ -1,0 +1,119 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <radialGradient id="backgroundGradient" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#1e1b4b;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Logo Gradient -->
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7" />
+      <stop offset="50%" style="stop-color:#3b82f6" />
+      <stop offset="100%" style="stop-color:#06b6d4" />
+    </linearGradient>
+    
+    <!-- Glow Filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+    
+    <!-- Subtle Animation -->
+    <animateTransform
+      attributeName="transform"
+      attributeType="XML"
+      type="rotate"
+      from="0 195 422"
+      to="360 195 422"
+      dur="20s"
+      repeatCount="indefinite"/>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="390" height="844" fill="url(#backgroundGradient)"/>
+  
+  <!-- Floating Particles -->
+  <circle cx="80" cy="150" r="2" fill="#a855f7" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="320" cy="200" r="1.5" fill="#3b82f6" opacity="0.5">
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="150" cy="700" r="2.5" fill="#06b6d4" opacity="0.4">
+    <animate attributeName="opacity" values="0.1;0.6;0.1" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="650" r="1" fill="#a855f7" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Main Logo Container -->
+  <g transform="translate(195, 422)">
+    <!-- Outer Ring -->
+    <circle cx="0" cy="0" r="80" fill="none" stroke="url(#logoGradient)" stroke-width="2" opacity="0.3" filter="url(#glow)">
+      <animate attributeName="r" values="80;85;80" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Inner Ring -->
+    <circle cx="0" cy="0" r="60" fill="none" stroke="url(#logoGradient)" stroke-width="1" opacity="0.5">
+      <animate attributeName="r" values="60;65;60" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Central Logo Shape -->
+    <g filter="url(#glow)">
+      <!-- Equal Symbol -->
+      <rect x="-25" y="-8" width="50" height="6" rx="3" fill="url(#logoGradient)">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-25" y="2" width="50" height="6" rx="3" fill="url(#logoGradient)">
+        <animate attributeName="opacity" values="1;0.8;1" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      
+      <!-- Decorative Elements -->
+      <circle cx="-35" cy="-3" r="3" fill="#a855f7" opacity="0.8">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="35" cy="5" r="3" fill="#06b6d4" opacity="0.8">
+        <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
+  
+  <!-- App Name -->
+  <text x="195" y="550" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="32" font-weight="bold" opacity="0.9">
+    EQUAL
+  </text>
+  
+  <!-- Tagline -->
+  <text x="195" y="580" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" opacity="0.7">
+    Connect • Create • Collaborate
+  </text>
+  
+  <!-- Progress Bar Container -->
+  <g transform="translate(95, 720)">
+    <rect x="0" y="0" width="200" height="4" rx="2" fill="rgba(255,255,255,0.2)"/>
+    <rect x="0" y="0" width="160" height="4" rx="2" fill="url(#logoGradient)">
+      <animate attributeName="width" values="0;200;200" dur="4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Loading Text -->
+  <text x="195" y="750" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" opacity="0.6">
+    Loading...
+  </text>
+  
+  <!-- Subtle Background Pattern -->
+  <g opacity="0.1">
+    <line x1="0" y1="100" x2="390" y2="100" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="200" x2="390" y2="200" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="300" x2="390" y2="300" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="400" x2="390" y2="400" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="500" x2="390" y2="500" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="600" x2="390" y2="600" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="700" x2="390" y2="700" stroke="white" stroke-width="0.5"/>
+  </g>
+</svg>

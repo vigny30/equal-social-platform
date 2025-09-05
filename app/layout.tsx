@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Orbitron, Inter } from "next/font/google"
+import { AppWrapper } from "@/components/app-wrapper"
 import "./globals.css"
 
 const orbitron = Orbitron({
@@ -28,7 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${orbitron.variable} ${inter.variable} dark`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <AppWrapper>{children}</AppWrapper>
+      </body>
     </html>
   )
 }
