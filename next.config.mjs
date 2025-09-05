@@ -12,9 +12,8 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   distDir: 'out',
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
+  basePath: '/equal-social-platform',
+  assetPrefix: '/equal-social-platform',
 }
 
 export default nextConfig
