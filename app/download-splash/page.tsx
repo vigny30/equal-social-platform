@@ -66,7 +66,7 @@ export default function DownloadSplashPage() {
             <div className="flex justify-center">
               <div className="w-[195px] h-[422px] border border-white/20 rounded-lg overflow-hidden">
                 <img 
-                  src="/splash-screen-static.svg" 
+                  src="./splash-screen-static.svg" 
                   alt="Splash Screen Preview" 
                   className="w-full h-full object-cover"
                 />

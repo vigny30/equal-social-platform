@@ -676,7 +676,7 @@ function CommentsModal({
         <div className="border-t border-white/10 pt-4 mt-4">
           <div className="flex gap-2">
             <Avatar className="w-8 h-8 flex-shrink-0">
-              <AvatarImage src="/placeholder.svg" />
+              <AvatarImage src="./placeholder.svg" />
               <AvatarFallback>Y</AvatarFallback>
             </Avatar>
             <div className="flex-1 flex gap-2">

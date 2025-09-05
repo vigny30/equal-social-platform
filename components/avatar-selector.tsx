@@ -11,18 +11,18 @@ import { Label } from "@/components/ui/label"
 
 // Pre-made avatar options similar to Reddit style
 const presetAvatars = [
-  { id: 1, src: "/friendly-blue-robot.png", name: "Friendly Robot" },
-  { id: 2, src: "/cool-purple-cat-avatar.png", name: "Cool Cat" },
-  { id: 3, src: "/space-astronaut-avatar.png", name: "Space Explorer" },
-  { id: 4, src: "/dark-ninja-avatar.png", name: "Shadow Ninja" },
-  { id: 5, src: "/wizard-avatar-magical.png", name: "Mystic Wizard" },
-  { id: 6, src: "/adventurous-pirate-avatar.png", name: "Sea Captain" },
-  { id: 7, src: "/alien-avatar-green.png", name: "Cosmic Being" },
-  { id: 8, src: "/fantasy-dragon-avatar.png", name: "Fire Dragon" },
-  { id: 9, src: "/unicorn-avatar-rainbow.png", name: "Rainbow Unicorn" },
-  { id: 10, src: "/phoenix-avatar-flame.png", name: "Phoenix Rising" },
-  { id: 11, src: "/placeholder.svg?height=100&width=100", name: "Cyber Punk" },
-  { id: 12, src: "/placeholder.svg?height=100&width=100", name: "Forest Guardian" },
+  { id: 1, src: "./friendly-blue-robot.png", name: "Friendly Robot" },
+  { id: 2, src: "./cool-purple-cat-avatar.png", name: "Cool Cat" },
+  { id: 3, src: "./space-astronaut-avatar.png", name: "Space Explorer" },
+  { id: 4, src: "./dark-ninja-avatar.png", name: "Shadow Ninja" },
+  { id: 5, src: "./wizard-avatar-magical.png", name: "Mystic Wizard" },
+  { id: 6, src: "./adventurous-pirate-avatar.png", name: "Sea Captain" },
+  { id: 7, src: "./alien-avatar-green.png", name: "Cosmic Being" },
+  { id: 8, src: "./fantasy-dragon-avatar.png", name: "Fire Dragon" },
+  { id: 9, src: "./unicorn-avatar-rainbow.png", name: "Rainbow Unicorn" },
+  { id: 10, src: "./phoenix-avatar-flame.png", name: "Phoenix Rising" },
+  { id: 11, src: "./placeholder.svg?height=100&width=100", name: "Cyber Punk" },
+  { id: 12, src: "./placeholder.svg?height=100&width=100", name: "Forest Guardian" },
 ]
 
 interface AvatarSelectorProps {
