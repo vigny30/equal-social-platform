@@ -2,12 +2,12 @@
   "name": "Equal - Social Media Platform",
   "short_name": "Equal",
   "description": "A futuristic social media platform with AI-powered content creation, video editing, and immersive experiences.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "./",
   "lang": "en",
   "categories": ["social", "entertainment", "multimedia"],
   "icons": [
@@ -51,7 +51,7 @@
       "name": "Create Content",
       "short_name": "Create",
       "description": "Create new video or photo content",
-      "url": "/create",
+      "url": "./create",
       "icons": [
         {
           "src": "/app-icon.svg",
@@ -63,7 +63,7 @@
       "name": "Explore",
       "short_name": "Explore",
       "description": "Discover trending content",
-      "url": "/explore",
+      "url": "./explore",
       "icons": [
         {
           "src": "/app-icon.svg",
@@ -75,7 +75,7 @@
       "name": "Profile",
       "short_name": "Profile",
       "description": "View your profile",
-      "url": "/profile",
+      "url": "./profile",
       "icons": [
         {
           "src": "/app-icon.svg",
